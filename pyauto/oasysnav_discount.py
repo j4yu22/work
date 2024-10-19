@@ -16,17 +16,31 @@ import cv2
 import numpy
 from datetime import datetime
 import json
+from google.oauth2.service_account import Credentials
+import gspread
 
-# Get the base directory of the program to make all the rest of this relative, rather than absolute.
+# Get the base directory of the current script
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Get API keys from NOSHARING
-nosharing_dir = os.path.join(base_dir, "..", "NOSHARING")
+# Navigate to the NOSHARING folder and load the merged JSON file
+nosharing_dir = os.path.abspath(os.path.join(base_dir, "..", "..", "NOSHARING"))
 json_file_path = os.path.join(nosharing_dir, "hulme-keys.json")
+
+# Load the JSON file
 with open(json_file_path, 'r') as file:
     keys = json.load(file)
-# These are the API keys needed
-gsheet_key = keys.get("gsheet-key")
+
+# Extract Google Sheets credentials from the merged JSON
+google_creds = keys.get("gsheet-json")
+
+# Set up the Google Sheets API client
+creds = Credentials.from_service_account_info(
+    google_creds,
+    scopes=['https://www.googleapis.com/auth/spreadsheets', 
+            'https://www.googleapis.com/auth/drive']
+)
+client = gspread.authorize(creds)
+# Might not need this, we will see
 discountAI_key = keys.get("discountAI-key")
 
 # Set the path to the Tesseract executable
